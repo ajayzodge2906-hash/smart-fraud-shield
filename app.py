@@ -4,9 +4,9 @@ import joblib
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable Cross-Origin Resource Sharing
+CORS(app)  # Allow cross-origin requests from frontend
 
-# Load the trained model and vectorizer
+# Load model and vectorizer
 model = joblib.load("fraud_model.pkl")
 vectorizer = joblib.load("vectorizer.pkl")
 
@@ -17,25 +17,31 @@ def home():
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        # Extract message from request JSON
+        # Get JSON data
         data = request.get_json()
         message = data.get("message", "")
 
         if not message.strip():
             return jsonify({"error": "Message is empty"}), 400
 
-        # Transform and predict
-        transformed_message = vectorizer.transform([message])
-        prediction = model.predict(transformed_message)[0]
+        # Transform input
+        transformed = vectorizer.transform([message])
 
-        # Map prediction to label
+        # Make prediction
+        prediction = model.predict(transformed)[0]
+        probability = model.predict_proba(transformed)[0][1]  # Probability of fraud (class 1)
+
         label = "Fraud" if prediction == 1 else "Genuine"
 
-        return jsonify({"prediction": label})
+        # Return result
+        return jsonify({
+            "prediction": label,
+            "probability": round(probability * 100, 2)  # Convert to percentage
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Run the app
+# Run app locally
 if __name__ == "__main__":
     app.run(debug=True)
