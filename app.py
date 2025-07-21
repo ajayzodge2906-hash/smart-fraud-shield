@@ -1,34 +1,41 @@
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import pickle
+import joblib
 
+# Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS
+CORS(app)  # Enable Cross-Origin Resource Sharing
 
-# Load model and vectorizer
-with open("model.pkl", "rb") as f:
-    model, vectorizer = pickle.load(f)
+# Load the trained model and vectorizer
+model = joblib.load("fraud_model.pkl")
+vectorizer = joblib.load("vectorizer.pkl")
 
 @app.route("/", methods=["GET"])
 def home():
-    return jsonify({"message": "Smart Fraud Shield API is running 🚀"})
+    return "✅ Smart Fraud Shield API is running!"
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    data = request.get_json()
-    if not data or "message" not in data:
-        return jsonify({"error": "No message provided"}), 400
+    try:
+        # Extract message from request JSON
+        data = request.get_json()
+        message = data.get("message", "")
 
-    message = data["message"]
-    vectorized_msg = vectorizer.transform([message])
-    prediction = model.predict(vectorized_msg)[0]
-    probability = model.predict_proba(vectorized_msg)[0][1]
+        if not message.strip():
+            return jsonify({"error": "Message is empty"}), 400
 
-    return jsonify({
-        "prediction": "Fraud" if prediction == 1 else "Genuine",
-        "fraud_probability": round(probability * 100, 2)
-    })
+        # Transform and predict
+        transformed_message = vectorizer.transform([message])
+        prediction = model.predict(transformed_message)[0]
 
+        # Map prediction to label
+        label = "Fraud" if prediction == 1 else "Genuine"
+
+        return jsonify({"prediction": label})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Run the app
 if __name__ == "__main__":
     app.run(debug=True)
