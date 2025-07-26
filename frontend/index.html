@@ -33,13 +33,14 @@
 
     textarea {
       width: 100%;
-      height: 130px;
+      height: 150px;
       padding: 12px;
       font-size: 16px;
       border: 2px solid #ddd;
       border-radius: 10px;
-      resize: none;
-      margin-bottom: 15px;
+      box-sizing: border-box;
+      resize: vertical;
+      margin-bottom: 20px;
     }
 
     button {
@@ -201,7 +202,7 @@
           } else if (score >= 45) {
             label = "More Info Recommended";
             color = "#FF9900";
-            scoreDisplay = `🔍 ${label}<br><small>This message shows mixed patterns and may need a closer look.</small>`;
+            scoreDisplay = ``📈 SmartScan Score: ${score}`<br><small>This message shows mixed patterns and may need a closer look.</small>`;
           } else {
             label = "Genuine";
             color = "green";
