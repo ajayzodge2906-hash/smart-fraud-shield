@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Smart Fraud Shield</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap">
   <style>
-    :root {
+       :root {
       --bg: #a8edea;
       --bg2: #fed6e3;
       --container-bg: #ffffff;
@@ -238,13 +239,12 @@
   </style>
 </head>
 <body>
-
-  <button class="history-toggle" onclick="toggleSidebar()">📜History</button>
-  <button class="dark-toggle" onclick="toggleDarkMode()" id="darkModeBtn">🌙</button>
+  <button class="history-toggle" onclick="toggleSidebar()">📜 History</button>
+  <button class="dark-toggle" onclick="toggleDarkMode()">🌙</button>
 
   <div class="sidebar" id="historySidebar">
     <button class="close-btn" onclick="toggleSidebar()">×</button>
-    <h3>Fraud History</h3>
+    <h3>History</h3>
     <ul id="history-list"></ul>
   </div>
 
@@ -265,6 +265,12 @@
       <span style="color: orange;"><strong>Uncertain</strong></span>: 45–55 &nbsp;|
       <span style="color: red;"><strong>Fraud</strong></span>: Above 55
     </div>
+    <div id="analytics-widget">
+      <h3>📊 App Analytics</h3>
+      <p>🚨 <strong>Total Messages scanned:</strong> <span id="total-reports">--</span></p>
+      <p>📈 <strong>Average Fraud Score:</strong> <span id="avg-score">--</span></p>
+      <p>✅ <strong>Safe Messages % :</strong> <span id="safe-percent">--%</span></p>
+    </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -278,7 +284,6 @@
       messagingSenderId: "889709392699",
       appId: "1:889709392699:web:d2a653e8ede3141af17d1e"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     let currentScore = 0;
@@ -311,7 +316,7 @@
           label = "Fraud";
           color = "red";
         } else if (score >= 45) {
-          label = "More Info Recommended";
+          label = "Uncertain";
           color = "#FF9900";
         } else {
           label = "Genuine";
@@ -328,9 +333,14 @@
         progressFill.style.width = `${score}%`;
         progressFill.style.backgroundColor = color;
 
-        if (label === "Fraud") {
-          reportSection.style.display = "block";
-        }
+        await db.collection("fraud_reports").add({
+  message,
+  score,
+  prediction: label,
+  reportedAt: new Date()
+});
+loadFraudHistory();
+loadAnalytics();
       } catch (error) {
         resultDiv.innerHTML = "❌ Unable to connect to the API.";
       }
@@ -342,10 +352,12 @@
         await db.collection("fraud_reports").add({
           message,
           score: currentScore,
+          prediction: currentScore > 55 ? 'Fraud' : (currentScore >= 45 ? 'Uncertain' : 'Genuine'),
           reportedAt: new Date()
         });
         alert("✅ Message reported and saved.");
         loadFraudHistory();
+        loadAnalytics();
       } catch (err) {
         alert("Failed to report the message.");
       }
@@ -359,10 +371,10 @@
         const snapshot = await db.collection("fraud_reports").orderBy("reportedAt", "desc").limit(10).get();
         snapshot.forEach(doc => {
           const data = doc.data();
-          const li = document.createElement("li");
           const time = new Date(data.reportedAt.seconds * 1000).toLocaleString();
+          const li = document.createElement("li");
           li.innerHTML = `
-            <strong>Score:</strong> ${data.score}<br>
+            <strong>${data.prediction} | Score:</strong> ${data.score}<br>
             <em>${data.message}</em><br>
             <small>${time}</small>
             <button class="delete-btn" onclick="deleteMessage('${doc.id}')">🗑️ Delete</button>
@@ -378,26 +390,40 @@
       if (confirm("Delete this message?")) {
         await db.collection("fraud_reports").doc(docId).delete();
         loadFraudHistory();
+        loadAnalytics();
       }
     }
 
     function toggleSidebar() {
-      document.getElementById("historySidebar").classList.toggle("open");
+      const sidebar = document.getElementById("historySidebar");
+      sidebar.classList.toggle("open");
     }
 
     function toggleDarkMode() {
-    const body = document.body;
-    const toggleBtn = document.getElementById("darkModeBtn");
+      document.body.classList.toggle('dark');
+      const btn = document.querySelector('.dark-toggle');
+      btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    }
 
-    body.classList.toggle("dark");
-  
-    if (body.classList.contains("dark")) {
-    toggleBtn.textContent = "☀️";  // Light mode icon
-  } else {
-    toggleBtn.textContent = "🌙";  // Dark mode icon
-  }
-}
-    window.onload = loadFraudHistory;
+    async function loadAnalytics() {
+      const snapshot = await db.collection("fraud_reports").get();
+      const reports = snapshot.docs.map(doc => doc.data());
+      const total = reports.length;
+      if (total === 0) return;
+      const totalScore = reports.reduce((sum, r) => sum + (r.score || 0), 0);
+      const avgScore = Math.round(totalScore / total);
+      const safeCount = reports.filter(r => (r.score || 0) < 45).length;
+      const safePercent = Math.round((safeCount / total) * 100);
+      document.getElementById("analytics-widget").style.display = "block";
+      document.getElementById("total-reports").textContent = total;
+      document.getElementById("avg-score").textContent = avgScore;
+      document.getElementById("safe-percent").textContent = `${safePercent}%`;
+    }
+
+    window.onload = function () {
+      loadFraudHistory();
+      loadAnalytics();
+    }
   </script>
 </body>
 </html>
