@@ -288,63 +288,73 @@
     const db = firebase.firestore();
     let currentScore = 0;
 
-    async function checkFraud() {
-      const message = document.getElementById("message").value;
-      const resultDiv = document.getElementById("result");
-      const progressFill = document.getElementById("progress-fill");
-      const progressBar = document.getElementById("progress-bar");
-      const reportSection = document.getElementById("report-section");
+async function checkFraud() {
+  const message = document.getElementById("message").value;
+  const resultDiv = document.getElementById("result");
+  const progressFill = document.getElementById("progress-fill");
+  const progressBar = document.getElementById("progress-bar");
+  const reportSection = document.getElementById("report-section");
 
-      resultDiv.innerHTML = "⏳ Checking...";
-      progressBar.style.display = "none";
-      reportSection.style.display = "none";
+  resultDiv.innerHTML = "⏳ Checking...";
+  progressBar.style.display = "none";
+  reportSection.style.display = "none";
 
-      try {
-        const response = await fetch("https://smart-fraud-shield.onrender.com/predict", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message })
-        });
+  // 1️⃣ BACKEND CALL
+  let data;
+  try {
+    const response = await fetch("https://smart-fraud-shield.onrender.com/predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
+    });
+    data = await response.json();
+  } catch (err) {
+    resultDiv.innerHTML = "❌ Backend not reachable.";
+    return;
+  }
 
-        const data = await response.json();
-        const score = Math.round(data.probability || 0);
-        currentScore = score;
+  // 2️⃣ UI LOGIC (UNCHANGED)
+  const score = Math.round(data.probability || 0);
+  currentScore = score;
 
-        let label = "", color = "", scoreDisplay = "";
+  let label = "", color = "", scoreDisplay = "";
 
-        if (score > 55) {
-          label = "Fraud";
-          color = "red";
-        } else if (score >= 45) {
-          label = "Uncertain";
-          color = "#FF9900";
-        } else {
-          label = "Genuine";
-          color = "green";
-        }
+  if (score > 55) {
+    label = "Fraud";
+    color = "red";
+  } else if (score >= 45) {
+    label = "Uncertain";
+    color = "#FF9900";
+  } else {
+    label = "Genuine";
+    color = "green";
+  }
 
-        scoreDisplay = `📈 SmartScan Score: ${score}`;
-        if (score >= 45 && score <= 55) {
-          scoreDisplay += `<br><small>This message shows mixed patterns and may need a closer look.</small>`;
-        }
+  scoreDisplay = `📈 SmartScan Score: ${score}`;
+  if (score >= 45 && score <= 55) {
+    scoreDisplay += `<br><small>This message shows mixed patterns and may need a closer look.</small>`;
+  }
 
-        resultDiv.innerHTML = `🔍 <span class="prediction" style="color:${color};">${label}</span><br>${scoreDisplay}`;
-        progressBar.style.display = "block";
-        progressFill.style.width = `${score}%`;
-        progressFill.style.backgroundColor = color;
+  resultDiv.innerHTML = `🔍 <span class="prediction" style="color:${color};">${label}</span><br>${scoreDisplay}`;
+  progressBar.style.display = "block";
+  progressFill.style.width = `${score}%`;
+  progressFill.style.backgroundColor = color;
 
-        await db.collection("fraud_reports").add({
-  message,
-  score,
-  prediction: label,
-  reportedAt: new Date()
-});
-loadFraudHistory();
-loadAnalytics();
-      } catch (error) {
-        resultDiv.innerHTML = "❌ Unable to connect to the API.";
-      }
-    }
+  // 3️⃣ FIREBASE SAVE (NON-BLOCKING)
+  try {
+    await db.collection("fraud_reports").add({
+      message,
+      score,
+      prediction: label,
+      reportedAt: new Date()
+    });
+    loadFraudHistory();
+    loadAnalytics();
+  } catch (err) {
+    console.warn("Firebase save failed:", err);
+  }
+}
+
 
     async function reportMessage() {
       const message = document.getElementById("message").value;
