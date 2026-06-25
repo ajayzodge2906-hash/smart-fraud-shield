@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Fraud Shield – Analytics Dashboard</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      --container-bg: rgba(255, 255, 255, 0.85);
+      --container-border: rgba(255, 255, 255, 0.4);
+      --text-color: #2d3748;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --border-color: rgba(0, 0, 0, 0.08);
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+      --text-muted: #718096;
+      
+      --primary-color: #00b894;
+      --primary-hover: #019875;
+      --secondary-color: #6c5ce7;
+      --secondary-hover: #5a4bcf;
+      --theme-btn-bg: #6c5ce7;
+      --theme-btn-hover: #5a4bcf;
+      --theme-btn-text: #ffffff;
+      --sidebar-bg: rgba(241, 243, 245, 0.95);
+      --input-bg: #ffffff;
+      --input-border: rgba(0, 0, 0, 0.12);
+    }
+
+    body.dark {
+      --bg-gradient: linear-gradient(135deg, #09090b 0%, #18181b 100%);
+      --container-bg: rgba(24, 24, 27, 0.8);
+      --container-border: rgba(255, 255, 255, 0.08);
+      --text-color: #f4f4f5;
+      --card-bg: rgba(20, 20, 23, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      --text-muted: #a1a1aa;
+      
+      --primary-color: #10b981;
+      --primary-hover: #059669;
+      --secondary-color: #6366f1;
+      --secondary-hover: #4f46e5;
+      --theme-btn-bg: #27272a;
+      --theme-btn-hover: #3f3f46;
+      --theme-btn-text: #f4f4f5;
+      --sidebar-bg: rgba(18, 18, 18, 0.98);
+      --input-bg: #09090b;
+      --input-border: rgba(255, 255, 255, 0.15);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+
+    header {
+      width: 90%;
+      max-width: 1200px;
+      margin-top: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      transition: border-color 0.4s;
+    }
+
+    h1.header-title {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .header-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: white;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 14px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+      font-family: inherit;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-nav-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-nav-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-nav-secondary {
+      background-color: var(--secondary-color);
+      color: white;
+    }
+
+    .btn-nav-secondary:hover {
+      background-color: var(--secondary-hover);
+    }
+
+    .btn-nav-info {
+      background-color: var(--theme-btn-bg);
+      color: var(--theme-btn-text);
+    }
+
+    .btn-nav-info:hover {
+      background-color: var(--theme-btn-hover);
+    }
+
+    .btn-theme {
+      background-color: var(--theme-btn-bg);
+      color: var(--theme-btn-text);
+    }
+
+    .btn-theme:hover {
+      background-color: var(--theme-btn-hover);
+    }
+
+    .dashboard-container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 30px 0 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      transition: all 0.4s ease;
+    }
+
+    /* KPI Cards Row */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--container-border);
+      transition: all 0.4s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+    }
+
+    .kpi-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    /* Charts Row */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .charts-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-container {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--container-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.4s ease;
+    }
+
+    .chart-container h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 18px;
+      font-weight: 700;
+      align-self: flex-start;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Table Section */
+    .table-container {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--container-border);
+      overflow-x: auto;
+      transition: all 0.4s ease;
+    }
+
+    .table-container h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 14px;
+      transition: border-color 0.4s;
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tr:hover {
+      background-color: rgba(0, 0, 0, 0.01);
+    }
+
+    body.dark tr:hover {
+      background-color: rgba(255, 255, 255, 0.01);
+    }
+
+    /* Status indicators */
+    .label-fraud {
+      color: #e74c3c;
+      font-weight: 700;
+    }
+
+    .label-uncertain {
+      color: #e67e22;
+      font-weight: 700;
+    }
+
+    .label-genuine {
+      color: var(--primary-color);
+      font-weight: 700;
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Category colors */
+    .cat-banking { background-color: #3498db; }
+    .cat-upi { background-color: #9b59b6; }
+    .cat-job { background-color: #1abc9c; }
+    .cat-lottery { background-color: #f39c12; }
+    .cat-investment { background-color: #2c3e50; }
+    .cat-kyc { background-color: #d35400; }
+    .cat-other { background-color: #7f8c8d; }
+    .cat-phishing-url { background-color: #e84393; }
+    .cat-none { background-color: var(--text-muted); }
+
+    /* Redesigned Sidebar & Backdrop Overlay */
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 998;
+    }
+    .sidebar-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -350px;
+      width: 330px;
+      height: 100%;
+      background: var(--sidebar-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-right: 1px solid var(--container-border);
+      box-shadow: var(--shadow);
+      padding: 30px 20px 40px;
+      transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 999;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .sidebar.open {
+      left: 0;
+    }
+
+    .sidebar h3 {
+      margin-top: 0;
+      font-size: 22px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .sidebar-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+      display: block;
+      font-weight: 500;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 24px;
+      right: 20px;
+      background: var(--container-border);
+      font-size: 18px;
+      border: none;
+      cursor: pointer;
+      color: var(--text-color);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .close-btn:hover {
+      background: var(--theme-btn-hover);
+      transform: rotate(90deg);
+    }
+
+    /* History Cards */
+    .history-card {
+      background: var(--card-bg);
+      border: 1px solid var(--container-border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      position: relative;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+
+    .history-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+    }
+
+    .history-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-card-title {
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .history-card-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .history-card-msg {
+      font-style: normal;
+      font-size: 12px;
+      line-height: 1.5;
+      background: var(--note-bg);
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: var(--text-color);
+      border-left: 3px solid var(--container-border);
+      word-break: break-word;
+      margin: 4px 0;
+    }
+
+    .history-card-delete {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .history-card-delete:hover {
+      background: rgba(231, 76, 60, 0.1);
+      color: #e74c3c;
+    }
+
+    /* History Empty State */
+    .history-empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      gap: 10px;
+    }
+
+    .history-empty-state span.empty-icon {
+      font-size: 40px;
+    }
+
+    .history-empty-state p {
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Custom scrollbar for sidebar */
+    .sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--container-border);
+      border-radius: 3px;
+    }
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    .score-genuine {
+      color: var(--primary-color);
+      font-weight: 700;
+    }
+    .score-fraud {
+      color: #e74c3c;
+      font-weight: 700;
+    }
+    .score-undefined {
+      color: #e67e22;
+      font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+        margin-top: 20px;
+      }
+      body {
+        flex-direction: column;
+        justify-content: flex-start;
+      }
+      .dashboard-container {
+        margin: 20px auto 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1 class="header-title" onclick="window.location.href='/'">🔐 Smart Fraud Shield</h1>
+    <div class="header-buttons">
+      <a href="/" class="btn btn-nav-info">🔍 Scan Messages</a>
+      <a href="/dashboard" class="btn btn-nav-primary">📊 Dashboard</a>
+      <button class="btn btn-nav-info" onclick="toggleSidebar()">📜 History</button>
+      <button class="btn btn-theme" onclick="toggleDarkMode()">🌙 Mode</button>
+    </div>
+  </header>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <div class="sidebar" id="historySidebar">
+    <button class="close-btn" onclick="toggleSidebar()">×</button>
+    <h3>📜 Recent Scans</h3>
+    <span class="sidebar-subtitle">Showing last 10 scans</span>
+    <div id="history-cards-container"></div>
+  </div>
+
+  <div class="dashboard-container">
+    
+    <!-- KPI Row -->
+    <div class="kpi-row" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+      <div class="kpi-card">
+        <span class="kpi-title">Total Scans</span>
+        <span id="kpi-total" class="kpi-value">--</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Frauds Detected</span>
+        <span id="kpi-frauds" class="kpi-value" style="color: #e74c3c;">--</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Genuine Messages</span>
+        <span id="kpi-genuine" class="kpi-value" style="color: #2ecc71;">--</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Community Reports</span>
+        <span id="kpi-reports" class="kpi-value" style="color: #6c5ce7;">--</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Top Scam Category</span>
+        <span id="kpi-top-scam" class="kpi-value" style="font-size: 15px; font-weight: bold;">--</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Most Attacked Channel</span>
+        <span id="kpi-most-attacked-channel" class="kpi-value" style="font-size: 20px; font-weight: bold; color: #e67e22;">--</span>
+        <span id="kpi-most-attacked-detail" style="font-size: 11px; color: var(--text-muted);">--</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Most Common Threat Signal</span>
+        <span id="kpi-most-common-signal" class="kpi-value" style="font-size: 16px; font-weight: bold; color: #e74c3c;">--</span>
+        <span id="kpi-most-common-detail" style="font-size: 11px; color: var(--text-muted);">--</span>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="chart-container">
+          <h3>Fraud vs Genuine Distribution</h3>
+          <div class="canvas-wrapper">
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-container">
+          <h3>Input Channel Distribution</h3>
+          <div class="canvas-wrapper">
+            <canvas id="channelChart"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <div class="chart-container" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <h3>Scam Category Distribution</h3>
+        <div class="canvas-wrapper" style="flex-grow: 1; height: 100%; min-height: 580px;">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-container">
+      <h3>Recent Message Scans (Last 10)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Message</th>
+            <th>Prediction</th>
+            <th>Category</th>
+            <th>Risk Score</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="recent-scans-tbody">
+          <tr>
+            <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading recent activity...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHekv8_qinn7vIj7yBHU_DpL18jusoSIA",
+      authDomain: "smart-fraud-shield.firebaseapp.com",
+      projectId: "smart-fraud-shield",
+      storageBucket: "smart-fraud-shield.appspot.com",
+      messagingSenderId: "889709392699",
+      appId: "1:889709392699:web:d2a653e8ede3141af17d1e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let pieChartInstance = null;
+    let barChartInstance = null;
+    let channelChartInstance = null;
+
+    function getChannelIcon(type) {
+      if (!type) return "💬";
+      switch(type.toLowerCase()) {
+        case 'sms': return "💬";
+        case 'email': return "📧";
+        case 'url': return "🔗";
+        case 'whatsapp': return "🟢";
+        default: return "💬";
+      }
+    }
+
+    function renderChannelChart(sms, email, url, whatsapp) {
+      const ctx = document.getElementById("channelChart").getContext("2d");
+      if (channelChartInstance) {
+        channelChartInstance.destroy();
+      }
+      const isDark = document.body.classList.contains("dark");
+      channelChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['SMS', 'Email', 'URL', 'WhatsApp'],
+          datasets: [{
+            data: [sms, email, url, whatsapp],
+            backgroundColor: ['#00b894', '#3498db', '#6c5ce7', '#2ecc71'],
+            borderColor: isDark ? '#27272a' : '#ffffff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: isDark ? '#f4f4f5' : '#2d3748',
+                font: {
+                  family: 'Outfit'
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    async function loadDashboardData() {
+      try {
+        const snapshot = await db.collection("fraud_reports").get();
+        const reports = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return { id: doc.id, ...data };
+        });
+
+        const totalScans = reports.length;
+        if (totalScans === 0) {
+          showEmptyState();
+          return;
+        }
+
+        // 1. Calculate KPIs
+        const fraudReports = reports.filter(r => r.prediction === "Fraud");
+        const frauds = fraudReports.length;
+        const genuines = reports.filter(r => r.prediction === "Genuine").length;
+        const uncertains = reports.filter(r => r.prediction === "Uncertain").length;
+        const communityReports = reports.filter(r => r.reported === true).length;
+
+        document.getElementById("kpi-total").textContent = totalScans;
+        document.getElementById("kpi-frauds").textContent = frauds;
+        document.getElementById("kpi-genuine").textContent = genuines;
+        document.getElementById("kpi-reports").textContent = communityReports;
+
+        // Calculate Channel distributions
+        const channelCounts = { sms: 0, email: 0, url: 0, whatsapp: 0 };
+        const fraudChannelCounts = { sms: 0, email: 0, url: 0, whatsapp: 0 };
+
+        reports.forEach(r => {
+          const chan = (r.input_type || 'sms').toLowerCase();
+          if (channelCounts.hasOwnProperty(chan)) {
+            channelCounts[chan]++;
+          }
+        });
+
+        fraudReports.forEach(r => {
+          const chan = (r.input_type || 'sms').toLowerCase();
+          if (fraudChannelCounts.hasOwnProperty(chan)) {
+            fraudChannelCounts[chan]++;
+          }
+        });
+
+        // Most Attacked Channel KPI
+        let mostAttackedChan = "N/A";
+        let maxAttackCount = 0;
+        for (const [chan, count] of Object.entries(fraudChannelCounts)) {
+          if (count > maxAttackCount) {
+            maxAttackCount = count;
+            mostAttackedChan = chan.toUpperCase();
+          }
+        }
+        if (frauds > 0 && maxAttackCount > 0) {
+          const pct = Math.round((maxAttackCount / frauds) * 100);
+          document.getElementById("kpi-most-attacked-channel").textContent = mostAttackedChan;
+          document.getElementById("kpi-most-attacked-detail").textContent = `${pct}% of Fraud Detections`;
+        } else {
+          document.getElementById("kpi-most-attacked-channel").textContent = "N/A";
+          document.getElementById("kpi-most-attacked-detail").textContent = "0% of Fraud Detections";
+        }
+
+        // Most Common Threat Signal KPI
+        const signalCounts = {
+          "Suspicious URL": 0,
+          "Urgency Language": 0,
+          "OTP Request": 0,
+          "Banking Keywords": 0,
+          "Brand Impersonation": 0,
+          "KYC Verification Request": 0
+        };
+
+        fraudReports.forEach(r => {
+          const signals = r.threat_signals || [];
+          signals.forEach(s => {
+            if (signalCounts.hasOwnProperty(s)) {
+              signalCounts[s]++;
+            }
+          });
+        });
+
+        let mostCommonSignal = "None";
+        let maxSignalCount = 0;
+        for (const [sig, count] of Object.entries(signalCounts)) {
+          if (count > maxSignalCount) {
+            maxSignalCount = count;
+            mostCommonSignal = sig;
+          }
+        }
+        if (frauds > 0 && maxSignalCount > 0) {
+          const pct = Math.round((maxSignalCount / frauds) * 100);
+          document.getElementById("kpi-most-common-signal").textContent = mostCommonSignal;
+          document.getElementById("kpi-most-common-detail").textContent = `Detected in ${pct}% of Fraud Cases`;
+        } else {
+          document.getElementById("kpi-most-common-signal").textContent = "N/A";
+          document.getElementById("kpi-most-common-detail").textContent = "0% of Fraud Cases";
+        }
+
+        // Calculate Category distribution
+        const categoryCounts = {
+          "Banking Scam": 0,
+          "UPI Scam": 0,
+          "Job Scam": 0,
+          "Lottery Scam": 0,
+          "Investment Scam": 0,
+          "KYC Verification Scam": 0,
+          "Other Scam": 0,
+          "Phishing URL": 0
+        };
+
+        reports.forEach(r => {
+          if (r.category && r.category !== "None" && categoryCounts.hasOwnProperty(r.category)) {
+            categoryCounts[r.category]++;
+          }
+        });
+
+        // Determine top scam category
+        let topCategoryName = "None";
+        let topCategoryCount = 0;
+        const totalScamsCount = reports.filter(r => r.prediction === "Fraud" || r.prediction === "Uncertain").length;
+
+        for (const [cat, val] of Object.entries(categoryCounts)) {
+          if (val > topCategoryCount) {
+            topCategoryCount = val;
+            topCategoryName = cat;
+          }
+        }
+
+        if (totalScamsCount > 0 && topCategoryCount > 0) {
+          const pct = Math.round((topCategoryCount / totalScamsCount) * 100);
+          document.getElementById("kpi-top-scam").textContent = `${topCategoryName} (${pct}%)`;
+        } else {
+          document.getElementById("kpi-top-scam").textContent = "N/A (0%)";
+        }
+
+        // 2. Render Pie Chart
+        renderPieChart(frauds, uncertains, genuines);
+
+        // 3. Render Bar Chart
+        renderBarChart(categoryCounts);
+
+        // 4. Render Channel Doughnut Chart
+        renderChannelChart(channelCounts.sms, channelCounts.email, channelCounts.url, channelCounts.whatsapp);
+
+        // 5. Render Table
+        renderTable(reports);
+
+      } catch (err) {
+        console.error("Error loading dashboard data:", err);
+      }
+    }
+
+    function showEmptyState() {
+      document.getElementById("kpi-total").textContent = "0";
+      document.getElementById("kpi-frauds").textContent = "0";
+      document.getElementById("kpi-genuine").textContent = "0";
+      document.getElementById("kpi-reports").textContent = "0";
+      document.getElementById("kpi-top-scam").textContent = "N/A";
+      document.getElementById("kpi-most-attacked-channel").textContent = "N/A";
+      document.getElementById("kpi-most-attacked-detail").textContent = "0% of Fraud Detections";
+      document.getElementById("kpi-most-common-signal").textContent = "N/A";
+      document.getElementById("kpi-most-common-detail").textContent = "0% of Fraud Cases";
+      
+      const tbody = document.getElementById("recent-scans-tbody");
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No scanned messages found in the system.</td></tr>`;
+    }
+
+    function renderPieChart(frauds, uncertains, genuines) {
+      const ctx = document.getElementById("pieChart").getContext("2d");
+      
+      if (pieChartInstance) {
+        pieChartInstance.destroy();
+      }
+
+      const isDark = document.body.classList.contains("dark");
+
+      pieChartInstance = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Fraud', 'Uncertain', 'Genuine'],
+          datasets: [{
+            data: [frauds, uncertains, genuines],
+            backgroundColor: ['#e74c3c', '#e67e22', '#2ecc71'],
+            borderColor: isDark ? '#27272a' : '#ffffff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: isDark ? '#f4f4f5' : '#2d3748',
+                font: {
+                  family: 'Outfit'
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderBarChart(categoryCounts) {
+      const ctx = document.getElementById("barChart").getContext("2d");
+
+      if (barChartInstance) {
+        barChartInstance.destroy();
+      }
+
+      const isDark = document.body.classList.contains("dark");
+      
+      const labels = ['Banking', 'UPI', 'Job', 'Lottery', 'Investment', 'KYC', 'Other', 'Phishing URL'];
+      const dataValues = [
+        categoryCounts["Banking Scam"],
+        categoryCounts["UPI Scam"],
+        categoryCounts["Job Scam"],
+        categoryCounts["Lottery Scam"],
+        categoryCounts["Investment Scam"],
+        categoryCounts["KYC Verification Scam"],
+        categoryCounts["Other Scam"],
+        categoryCounts["Phishing URL"]
+      ];
+
+      barChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Fraud Count',
+            data: dataValues,
+            backgroundColor: [
+              '#3498db', '#9b59b6', '#1abc9c', '#f39c12', '#2c3e50', '#d35400', '#7f8c8d'
+            ],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0,
+                color: isDark ? '#a1a1aa' : '#718096',
+                font: {
+                  family: 'Outfit'
+                }
+              },
+              grid: {
+                color: isDark ? '#27272a' : '#e2e8f0'
+              }
+            },
+            x: {
+              ticks: {
+                color: isDark ? '#a1a1aa' : '#718096',
+                font: {
+                  family: 'Outfit'
+                }
+              },
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderTable(reports) {
+      const recent = [...reports].sort((a, b) => {
+        const timeA = a.reportedAt?.seconds || 0;
+        const timeB = b.reportedAt?.seconds || 0;
+        return timeB - timeA;
+      }).slice(0, 10);
+
+      const tbody = document.getElementById("recent-scans-tbody");
+      tbody.innerHTML = "";
+
+      recent.forEach(r => {
+        const tr = document.createElement("tr");
+        const displayMsg = r.message.length > 70 ? r.message.substring(0, 67) + "..." : r.message;
+        
+        let predClass = "label-genuine";
+        if (r.prediction === "Fraud") predClass = "label-fraud";
+        else if (r.prediction === "Uncertain") predClass = "label-uncertain";
+
+        let catClass = "cat-none";
+        let displayCat = r.category || "None";
+        if (displayCat && displayCat !== "None") {
+          catClass = `cat-${displayCat.toLowerCase().replace(" scam", "").replace(" verification", "").replace(" ", "-")}`;
+        }
+
+        const date = r.reportedAt ? new Date(r.reportedAt.seconds * 1000) : new Date();
+        const displayTime = date.toLocaleString();
+        const channelIcon = getChannelIcon(r.input_type);
+
+        tr.innerHTML = `
+          <td title="${r.message.replace(/"/g, '&quot;')}">${channelIcon} ${escapeHtml(displayMsg)}</td>
+          <td><span class="${predClass}">${r.prediction}</span></td>
+          <td><span class="category-badge ${catClass}">${displayCat}</span></td>
+          <td><strong>${r.score || 0}%</strong></td>
+          <td><small>${displayTime}</small></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function loadFraudHistory() {
+      const container = document.getElementById("history-cards-container");
+      container.innerHTML = "";
+
+      try {
+        const snapshot = await db.collection("fraud_reports").orderBy("reportedAt", "desc").limit(10).get();
+        if (snapshot.empty) {
+          container.innerHTML = `
+            <div class="history-empty-state">
+              <span class="empty-icon">📜</span>
+              <p>No scan history yet. Scanned messages will appear here.</p>
+            </div>
+          `;
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const date = data.reportedAt ? new Date(data.reportedAt.seconds * 1000) : new Date();
+          const timeString = date.toLocaleString();
+          
+          let predictionColor = "var(--primary-color)"; // Default genuine
+          if (data.prediction === "Fraud") {
+            predictionColor = "#e74c3c";
+          } else if (data.prediction === "Uncertain") {
+            predictionColor = "#e67e22";
+          }
+
+          let displayBadge = data.prediction;
+          if (data.category && data.category !== "None") {
+            displayBadge += ` (${data.category})`;
+          }
+
+          const channelIcon = getChannelIcon(data.input_type);
+          const card = document.createElement("div");
+          card.className = "history-card";
+          card.style.borderLeft = `4px solid ${predictionColor}`;
+
+          const escapeMsg = escapeHtml(data.message);
+
+          card.innerHTML = `
+            <div class="history-card-header">
+              <span class="history-card-title" style="color: ${predictionColor};">
+                ${data.prediction === 'Fraud' ? '🚨' : data.prediction === 'Uncertain' ? '⚠️' : '🛡️'} ${channelIcon} ${displayBadge}
+              </span>
+              <button class="history-card-delete" onclick="deleteMessage('${doc.id}')" title="Delete scan log">🗑️</button>
+            </div>
+            <div class="history-card-msg">"${escapeMsg}"</div>
+            <div class="history-card-meta">
+              <span>Score: <strong>${data.score}%</strong> | ${data.severity || 'N/A'}</span>
+              <small>${timeString}</small>
+            </div>
+            ${data.reported ? '<div style="color:#e74c3c; font-size: 11px; font-weight: bold; margin-top: 2px;">🚨 Reported to Community</div>' : ''}
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error("Error loading history", err);
+      }
+    }
+
+    async function deleteMessage(docId) {
+      if (confirm("Delete this message from history?")) {
+        await db.collection("fraud_reports").doc(docId).delete();
+        loadFraudHistory();
+        loadDashboardData();
+      }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById("historySidebar");
+      const overlay = document.getElementById("sidebarOverlay");
+      sidebar.classList.toggle("open");
+      overlay.classList.toggle("active");
+    }
+
+    function toggleDarkMode() {
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      updateThemeUI(isDark);
+      loadDashboardData();
+    }
+
+    function updateThemeUI(isDark) {
+      const btn = document.querySelector('.btn-theme');
+      if (btn) btn.textContent = isDark ? '☀️ Mode' : '🌙 Mode';
+    }
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+      
+      if (shouldBeDark) {
+        document.body.classList.add('dark');
+      } else {
+        document.body.classList.remove('dark');
+      }
+      updateThemeUI(shouldBeDark);
+    }
+
+    window.onload = function () {
+      initTheme();
+      loadDashboardData();
+      loadFraudHistory();
+    }
+  </script>
+</body>
+</html>
